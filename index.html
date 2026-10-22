@@ -6,7 +6,6 @@
 <title>CANTINA</title>
 
 <style>
-/* ================= CSS: a aparência da página ================= */
 body { font-family: Arial, sans-serif; background: #f4f5f7; margin: 0; padding: 20px; color: #222; }
 .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .caixa { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
@@ -31,17 +30,14 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-siz
 </head>
 
 <body>
-<!-- ================= HTML: a estrutura da página ================= -->
 <h1>🍔 CANTINA - BLOCO IV</h1>
 
 <div class="container">
-  <!-- US03: cardápio digital (preço e disponibilidade) -->
   <div class="caixa">
     <h2>CARDÁPIO</h2>
     <div id="CARDÁPIO"></div>
   </div>
 
-  <!-- Carrinho do cliente -->
   <div class="caixa">
     <h2>CARRINHO</h2>
     <div id="carrinho"></div>
@@ -51,7 +47,6 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-siz
   </div>
 </div>
 
-<!-- US01 e US02: cadastro de produtos e controle de estoque (funcionários) -->
 <div class="caixa" style="margin-top: 20px;">
   <h2>PRODUTOS E ESTOQUE</h2>
   <h3 id="titulo-form">CADASTRAR PRODUTO</h3>
@@ -69,16 +64,12 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-siz
   </table>
 </div>
 
-<!-- US04: registro de pedidos -->
 <div class="caixa" style="margin-top: 20px;">
   <h2>PEDIDOS</h2>
   <div id="pedidos"></div>
 </div>
 
 <script>
-/* ================= JAVASCRIPT: o funcionamento ================= */
-
-// ---------- 1) DADOS (as "variáveis" do sistema) ----------
 let produtos = [
   { id: 1, nome: "COXINHA",        preco: 6, estoque: 20, ativo: true },
   { id: 2, nome: "PÃO DE QUEIJO",  preco: 4, estoque: 25, ativo: true },
@@ -88,27 +79,25 @@ let produtos = [
   { id: 6, nome: "CAFÉ",           preco: 3, estoque: 0,  ativo: true }
 ];
 
-const etapas = ["AGUARDANDO", "EM PREPARO", "CONCLUÍDO"];   // status em ordem
-const ESTOQUE_BAIXO = 5;          // a partir daqui avisa "estoque baixo"
+const etapas = ["AGUARDANDO", "EM PREPARO", "CONCLUÍDO"];
+const ESTOQUE_BAIXO = 5;
 
-let carrinho = [];                // cada item: { id, quantidade }
-let pedidos = [];                 // pedidos finalizados
-let proximoNumero = 1;            // número do próximo pedido
-let proximoIdProduto = 7;         // id do próximo produto cadastrado
-let editandoId = null;            // id do produto em edição (null = cadastrando novo)
+let carrinho = [];
+let pedidos = [];
+let proximoNumero = 1;
+let proximoIdProduto = 7;
+let editandoId = null;
 
-// ---------- 2) FUNÇÕES AUXILIARES (pequenas ajudas usadas em vários lugares) ----------
 function acharProduto(id) { return produtos.find(p => p.id === id); }
 function disponivel(p)    { return p.ativo && p.estoque > 0; }
 function dinheiro(valor)  { return "R$ " + valor.toFixed(2).replace(".", ","); }
 function agora()          { return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); }
 function limpar(texto)    { return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-// Guarda e carrega os dados no navegador (assim não se perdem ao recarregar a página)
 function salvarDados() {
   try {
     localStorage.setItem("cantina", JSON.stringify({ produtos, pedidos, proximoNumero, proximoIdProduto }));
-  } catch (e) { /* se o navegador não permitir, o sistema continua funcionando sem salvar */ }
+  } catch (e) { }
 }
 function carregarDados() {
   try {
@@ -120,7 +109,6 @@ function carregarDados() {
   } catch (e) { }
 }
 
-// ---------- 3) CARDÁPIO (US03) ----------
 function mostrarCardapio() {
   let html = "";
   for (const p of produtos) {
@@ -135,15 +123,14 @@ function mostrarCardapio() {
   document.getElementById("CARDÁPIO").innerHTML = html;
 }
 
-// ---------- 4) CARRINHO (quantidade com + e −, remover, limite do estoque) ----------
 function adicionarAoCarrinho(id) {
   const p = acharProduto(id);
   const item = carrinho.find(i => i.id === id);
   if (item) {
     if (item.quantidade >= p.estoque) { alert("ESTOQUE INSUFICIENTE!"); return; }
-    item.quantidade++;                           // já estava no carrinho: soma 1
+    item.quantidade++;
   } else {
-    carrinho.push({ id: id, quantidade: 1 });    // novo no carrinho: começa em 1
+    carrinho.push({ id: id, quantidade: 1 });
   }
   mostrarCarrinho();
 }
@@ -152,14 +139,14 @@ function mudarQuantidade(id, valor) {
   const p = acharProduto(id);
   const item = carrinho.find(i => i.id === id);
   const nova = item.quantidade + valor;
-  if (nova < 1) return;                                              // nunca menor que 1
-  if (nova > p.estoque) { alert("ESTOQUE INSUFICIENTE!"); return; }  // nunca maior que o estoque
+  if (nova < 1) return;
+  if (nova > p.estoque) { alert("ESTOQUE INSUFICIENTE!"); return; }
   item.quantidade = nova;
   mostrarCarrinho();
 }
 
 function removerDoCarrinho(id) {
-  carrinho = carrinho.filter(i => i.id !== id);   // mantém todos, menos esse
+  carrinho = carrinho.filter(i => i.id !== id);
   mostrarCarrinho();
 }
 
@@ -188,7 +175,6 @@ function mostrarCarrinho() {
   document.getElementById("total").textContent = total.toFixed(2);
 }
 
-// Se o estoque mudou (edição, desativação), corrige o carrinho para não passar do limite
 function ajustarCarrinho() {
   carrinho = carrinho.filter(i => { const p = acharProduto(i.id); return p && disponivel(p); });
   for (const i of carrinho) {
@@ -197,14 +183,12 @@ function ajustarCarrinho() {
   }
 }
 
-// ---------- 5) FINALIZAR PEDIDO (US04 + baixa de estoque US02) ----------
 function finalizarPedido() {
   const nome = document.getElementById("nome").value.trim();
 
   if (carrinho.length === 0) { alert("NÃO HÁ ITENS NO CARRINHO!"); return; }
   if (nome === "")           { alert("DIGITE O NOME DO CLIENTE!"); return; }
 
-  // Confere o estoque de cada item antes de aceitar o pedido
   for (const i of carrinho) {
     const p = acharProduto(i.id);
     if (!disponivel(p) || p.estoque < i.quantidade) { alert("ESTOQUE INSUFICIENTE PARA " + p.nome + "!"); return; }
@@ -214,7 +198,7 @@ function finalizarPedido() {
   const itens = [];
   for (const i of carrinho) {
     const p = acharProduto(i.id);
-    p.estoque -= i.quantidade;                 // desconta do estoque
+    p.estoque -= i.quantidade;
     total += p.preco * i.quantidade;
     itens.push({ id: p.id, nome: p.nome, preco: p.preco, quantidade: i.quantidade });
   }
@@ -227,7 +211,6 @@ function finalizarPedido() {
   mostrarTudo();
 }
 
-// ---------- 6) PEDIDOS ----------
 function mostrarPedidos() {
   let html = "";
   for (const p of pedidos) {
@@ -257,7 +240,7 @@ function avancarStatus(numero) {
 function cancelarPedido(numero) {
   if (!confirm("CANCELAR O PEDIDO #" + numero + "?")) return;
   const pedido = pedidos.find(p => p.numero === numero);
-  for (const i of pedido.itens) {              // devolve os itens ao estoque
+  for (const i of pedido.itens) {
     const p = acharProduto(i.id);
     if (p) p.estoque += i.quantidade;
   }
@@ -265,7 +248,6 @@ function cancelarPedido(numero) {
   mostrarTudo();
 }
 
-// ---------- 7) PRODUTOS E ESTOQUE (US01 e US02) ----------
 function mostrarProdutos() {
   let html = "";
   for (const p of produtos) {
@@ -296,10 +278,10 @@ function salvarProduto() {
     return;
   }
 
-  if (editandoId !== null) {                    // editando um produto existente
+  if (editandoId !== null) {
     const p = acharProduto(editandoId);
     p.nome = nome; p.preco = preco; p.estoque = estoque;
-  } else {                                      // cadastrando um novo
+  } else {
     produtos.push({ id: proximoIdProduto, nome: nome, preco: preco, estoque: estoque, ativo: true });
     proximoIdProduto++;
   }
@@ -332,7 +314,6 @@ function alternarProduto(id) {
   mostrarTudo();
 }
 
-// ---------- 8) INÍCIO: desenha tudo quando a página abre ----------
 function mostrarTudo() {
   ajustarCarrinho();
   mostrarCardapio();
